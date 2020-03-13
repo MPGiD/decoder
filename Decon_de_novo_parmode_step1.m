@@ -3,13 +3,6 @@ function Decon_de_novo_parmode_step1(configFileName,numfactors)
 %% ========== Preprocess ==================================================
 tic
 
-% Add path
-tmpInd = find(strcmp(configInfo{1},'binDECODER'));
-binDECODER = configInfo{2}{tmpInd};
-addpath(binDECODER)
-addpath(fullfile(binDECODER,'data'))
-addpath(fullfile(binDECODER,'utils'))
-
 % Read and parse configure file 
 configFile = fopen(configFileName);
 if configFile == -1
@@ -19,6 +12,13 @@ else
     %configInfo = [configInfo{:}];
 end
 fclose(configFile);
+
+% Add path
+tmpInd = find(strcmp(configInfo{1},'binDECODER'));
+binDECODER = configInfo{2}{tmpInd};
+addpath(binDECODER)
+addpath(fullfile(binDECODER,'data'))
+addpath(fullfile(binDECODER,'utils'))
 
 % Set parameters
 tmpInd = find(strcmp(configInfo{1},'geneIDType'));
@@ -81,6 +81,8 @@ clear configFile configFileName
 clear dataFormat dataMatrix logTransformed numTrainGene
 clear rawTable x tmpInd tmp ans
 
+%% ===== Run NMF for only one K, added by Mark ======
+timeKLoop = timePreproc;
 
 %%% ===== Train gene weight seed on 5K genes through repetitions ======
 timeIteration = timeKLoop;
@@ -150,7 +152,7 @@ if ~isempty(find(all(genesigs==0)))
 
 	fprintf('K=%d: Converged on %d factors, thus skipped...\n',numfactors, tmpK)
 	timeKLoop = timeIteration + toc;
-	break
+	return
 end
 for i = 1:size(samplesigs,1)
 	f = mean(genesigs(:,i));
@@ -170,7 +172,7 @@ if ~isempty(find(all(genesigs==0)))
 
 	fprintf('K=%d: Converged on %d factors, thus skipped...\n',numfactors, tmpK)
 	timeKLoop = timeIteration + toc;
-	break
+	return
 end
 for i = 1:size(samplesigs,1)
 	f = mean(genesigs(:,i));
