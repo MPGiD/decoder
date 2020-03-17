@@ -3,13 +3,6 @@ function Decon_de_novo_parmode_step2(configFileName)
 %% ========== Preprocess ==================================================
 tic
 
-% Add path
-tmpInd = find(strcmp(configInfo{1},'binDECODER'));
-binDECODER = configInfo{2}{tmpInd};
-addpath(binDECODER)
-addpath(fullfile(binDECODER,'data'))
-addpath(fullfile(binDECODER,'utils'))
-
 % Read and parse configure file 
 configFile = fopen(configFileName);
 if configFile == -1
@@ -19,6 +12,14 @@ else
     %configInfo = [configInfo{:}];
 end
 fclose(configFile);
+
+% Add path
+tmpInd = find(strcmp(configInfo{1},'binDECODER'));
+binDECODER = configInfo{2}{tmpInd};
+addpath(binDECODER)
+addpath(fullfile(binDECODER,'data'))
+addpath(fullfile(binDECODER,'utils'))
+
 
 % Set parameters
 tmpInd = find(strcmp(configInfo{1},'geneIDType'));
@@ -41,14 +42,16 @@ fprintf('Preprocessing completed, %3.0f minutes elapsed...\n',timePreproc/60)
 %% ========== load saved data from increasing K ==================================================
 tic
 
-tmpFile = dir(fullfile(outDir,'*-factor_data.mat'));
+tmpFile = dir(fullfile(outDir,'K*_res.mat'));
 facDat = {tmpFile(:).name}';
-tmpFile = regexp(facDat(:,1), '-', 'split');
+facDat = regexprep( facDat, 'K', '' ); 
+tmpFile = regexp(facDat(:,1), '_', 'split');
 tmpFile = vertcat(tmpFile{:});
 tmpFile = tmpFile(:,1);
 tmpFile = cellfun(@str2double,tmpFile);
 [facNum,I] = sort(tmpFile);
 facDat = facDat(I,:);
+facDat = strcat('K', facDat) 
 factorInfo = facNum;
 clear tmpFile I facNum
 
@@ -155,9 +158,11 @@ for factorInd = 1:size(factorInfo,1)
     end
     
     % if break
-    if factorInfo(factorInd,1)-factorInfo(factorInd-1,1)>3
-        factorEndInd = factorInd-1;
-        break
+    if (factorStartInd~=1)  
+       if factorInfo(factorInd,1)-factorInfo(factorInd-1,1)>3
+           factorEndInd = factorInd-1;
+           break
+       end
     end
     
     factorEndInd = factorInd;
